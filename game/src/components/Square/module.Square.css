@@ -1,0 +1,10 @@
+.Square {
+    border: solid;
+    background-color: azure;
+    display: flex;
+}
+
+.Square div {
+font-size:50px;
+    margin: auto;
+}

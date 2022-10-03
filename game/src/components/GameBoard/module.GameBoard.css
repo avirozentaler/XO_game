@@ -1,0 +1,7 @@
+.GameBoard
+{
+    justify-content: center;
+    display: grid;
+    grid-template-columns: 30vh 30vh 30vh;
+    grid-template-rows: 15vw 15vw 15vw;
+}
