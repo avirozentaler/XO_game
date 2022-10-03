@@ -1,88 +1,116 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Square from '../Square/Square';
 import './module.GameBoard.css'
+import io from 'socket.io-client';
 
+const socket = io('http://localhost:3001');
 
 export default function GameBoard() {
 
-    const [sign, setSign] = useState('X');
-    const [squares, setSquares] = useState([Array(3).fill(''), Array(3).fill(''), Array(3).fill('')]);
+    const [isWon, setIsWon] = useState('');
+    const [squares, setSquares] = useState();
 
-    // const checkVecA = () => { return squares[0][0] === squares[0][1] && squares[0][1] === squares[0][2] }
-    // const checkVecB = () => { return squares[1][0] === squares[1][1] && squares[1][1] === squares[1][2] }
-    // const checkVecC = () => { return squares[2][0] === squares[2][1] && squares[2][1] === squares[2][2] }
+    useEffect(() => {
+        socket.on('start', (data) => {
+            setSquares(data);
+        })
+    }, []);
 
-    // const checkVecD = () => { return squares[0][0] === squares[1][0] && squares[1][0] === squares[2][0] }
-    // const checkVecE = () => { return squares[0][1] === squares[1][1] && squares[1][1] === squares[2][1] }
-    // const checkVecF = () => { return squares[0][2] === squares[1][2] && squares[1][2] === squares[2][2] }
+    useEffect(() => {
 
-    // const checkVecG = () => { return squares[0][0] === squares[1][1] && squares[1][1] === squares[2][2] }
-    // const checkVecH = () => { return squares[0][2] === squares[1][1] && squares[1][1] === squares[2][0] }
+        socket.on('complete_move', (data) => {
+            setSquares(data);
+        });
 
-    const isWin = (i, j) => {
-       
-        
-            const result = false;
-            if (i===0) {  }
-            // if (i===0) { result = result || checkVecA(); }
-            // if (i===1) { result = result || checkVecB(); }
-            // if(i===2){result = result || checkVecC();}
+        socket.on('complete_new_game', (data) => {
+            setSquares(data);
+        });
+        socket.on('isWin',(data)=>{
+            setIsWon(data);
+            console.log(`${data} is won!!`);
+        })
+    }, [socket])
 
-            // if (j=== 0) { result = result || checkVecD(); }
-            // if (j=== 1) { result = result || checkVecE(); }
-            // if (j=== 2) { result = result || checkVecF(); }
-
-            // if (i === j) { result = result || checkVecG(); }
-            // if (i+j===2) { result = result || checkVecH(); }
-// console.log(result);
-            return result;
+    const newGame = () => {
+        setIsWon('');
+        socket.emit('new_game', null);
     }
 
-    const checkWin = (i,j) => {
-        console.log(  squares)
-        isWin(i,j);
-        console.log('checkWin');
-
+    const move = (i, j) => {
+        socket.emit("move", { i, j })
     }
 
-    const changeSquare = () => {
-        sign === 'X' ? setSign('O') : setSign('X');
-    }
 
-    const insertSquare = (i, j) => {
-        setSquares(squares.map((item_i, index_i) => {
-            if (index_i === i) {
-               return item_i.map((item_j, index_j) => {
-                    if (index_j === j) {
-        console.log('insertSquare');
-                        
-                        return sign
-                    }
-                    else {
-                        return item_j
-                    }
-                })
-            }
-            else {
-                return item_i
-            }
-        }))
 
-    }
+
+
 
     return (
 
         <div className='GameBoard'>
-            {squares.map((item, index_i) => {
+            {squares ? squares.map((item, index_i) => {
                 return item.map((square, index_j) => {
-                    return <Square e={square} key={index_i + index_j} index_i={index_i} index_j={index_j} insertSquare={insertSquare} sign={sign} changeSign={changeSquare} checkWin={checkWin}></Square>
+                    return <Square key={index_i + index_j} square={square} isWon={isWon} move={move} i={index_i} j={index_j} ></Square>
                 })
-
-            })}
-
+            }) : null}
+            <button onClick={newGame}>new game</button>
+            {isWon?<h2>{isWon} won!!</h2> :null}
         </div>
 
     )
 }
 
+// const checkVecA = () => { return squares[0][0] === squares[0][1] && squares[0][1] === squares[0][2] }
+// const checkVecB = () => { return squares[1][0] === squares[1][1] && squares[1][1] === squares[1][2] }
+// const checkVecC = () => { return squares[2][0] === squares[2][1] && squares[2][1] === squares[2][2] }
+
+// const checkVecD = () => { return squares[0][0] === squares[1][0] && squares[1][0] === squares[2][0] }
+// const checkVecE = () => { return squares[0][1] === squares[1][1] && squares[1][1] === squares[2][1] }
+// const checkVecF = () => { return squares[0][2] === squares[1][2] && squares[1][2] === squares[2][2] }
+
+// const checkVecG = () => { return squares[0][0] === squares[1][1] && squares[1][1] === squares[2][2] }
+// const checkVecH = () => { return squares[0][2] === squares[1][1] && squares[1][1] === squares[2][0] }
+
+
+
+// const inspectionWin = () => {
+//     const result = false;
+
+//     if (i === 0) { result = result || checkVecA(); }
+//     if (i === 1) { result = result || checkVecB(); }
+//     if (i === 2) { result = result || checkVecC(); }
+
+//     if (j === 0) { result = result || checkVecD(); }
+//     if (j === 1) { result = result || checkVecE(); }
+//     if (j === 2) { result = result || checkVecF(); }
+
+//     if (i === j) { result = result || checkVecG(); }
+//     if (i + j === 2) { result = result || checkVecH(); }
+//     console.log(result);
+// }
+
+
+
+
+
+    // const insertSquare = (i, j) => {
+    //     setSquares(squares.map((item_i, index_i) => {
+    //         if (index_i === i) {
+    //             return item_i.map((item_j, index_j) => {
+    //                 if (index_j === j) {
+    //                     console.log('insertSquare');
+
+    //                     return sign
+    //                 }
+    //                 else {
+    //                     return item_j
+    //                 }
+    //             })
+    //         }
+    //         else {
+    //             return item_i
+    //         }
+    //     }))
+
+    // }
