@@ -8,7 +8,7 @@ const socket = io('http://localhost:3001');
 
 export default function GameBoard() {
 
-    const [isWon, setIsWon] = useState('');
+    const [isWon, setIsWon] = useState(null);
     const [squares, setSquares] = useState();
 
     useEffect(() => {
@@ -24,13 +24,14 @@ export default function GameBoard() {
         });
 
         socket.on('complete_new_game', (data) => {
+            setIsWon(null);
             setSquares(data);
         });
         socket.on('isWin',(data)=>{
             setIsWon(data);
-            console.log(`${data} is won!!`);
+            alert(`${data} is won!!`);
         })
-    }, [socket])
+    },[socket])
 
     const newGame = () => {
         setIsWon('');
@@ -38,6 +39,7 @@ export default function GameBoard() {
     }
 
     const move = (i, j) => {
+        console.log(squares);
         socket.emit("move", { i, j })
     }
 

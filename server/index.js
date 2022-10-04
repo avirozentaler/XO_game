@@ -5,7 +5,8 @@ const { Server } = require('socket.io')
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: ["http://localhost:3000"] } });
-let {sign,board,inspectionWin} = require('./data.js');
+let { sign, board, inspectionWin, restartBoard } = require('./data.js');
+
 
 const modifySign = () => {
     if (sign === "X") {
@@ -22,23 +23,26 @@ io.on('connect', (socket) => {
     socket.emit('start', board);
 
     socket.on('new_game', () => {
-        board = [Array(3).fill(''), Array(3).fill(''), Array(3).fill('')];
-        socket.emit('complete_new_game', board);
+        const temp = [Array(3).fill(''), Array(3).fill(''), Array(3).fill('')];
+        board = temp;
+        socket.emit('complete_new_game', temp);
+        socket.broadcast.emit('complete_new_game', temp);
     });
 
     socket.on('move', (data) => {
         const { i, j } = data;
         board[i][j] = sign;
-        const isWin = inspectionWin(i, j);
-        // if(inspectionWin(i, j)){
-        //     socket.emit('isWin',sign);
-        // } 
-        console.log(isWin)
-        if(isWin){
-            console.log(board);
-            socket.emit('isWin',sign);
-        } 
+        
+        socket.broadcast.emit('complete_move', board);
         socket.emit('complete_move', board);
+
+        if (inspectionWin(i, j)) {
+            socket.emit('isWin', sign);
+            socket.broadcast.emit('isWin', sign);
+            const temp = [Array(3).fill(''), Array(3).fill(''), Array(3).fill('')];
+            board = temp;
+
+        }
         modifySign();
     });
 
