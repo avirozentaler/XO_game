@@ -7,9 +7,7 @@ import io from 'socket.io-client';
 
 const socket = io('http://localhost:3001', { autoConnect: false });
 
-export default function GameBoard() {
-    // const [sign, setSign] = useState(null);
-
+export default function GameBoard() { 
     const [isWon, setIsWon] = useState(null);
     const [squares, setSquares] = useState(null);
     const [teko, setTeko] = useState(false);
@@ -31,12 +29,12 @@ export default function GameBoard() {
         });
     }, []);
 
-    
 
-    useEffect(()=>{
+
+    useEffect(() => {
         socket.on('complete_move', (data) => {
             setSquares(data.board);
-           
+
             if (data.win) {
                 setIsWon(data.sign)
                 setTurn(false);
@@ -53,11 +51,11 @@ export default function GameBoard() {
             setIsWon(false);
             setTeko(false);
         });
-    
-       
-    
 
-    },[socket]);
+
+
+
+    }, [socket]);
 
 
     const newGame = () => {
@@ -98,57 +96,3 @@ export default function GameBoard() {
 
     )
 }
-
-// const checkVecA = () => { return squares[0][0] === squares[0][1] && squares[0][1] === squares[0][2] }
-// const checkVecB = () => { return squares[1][0] === squares[1][1] && squares[1][1] === squares[1][2] }
-// const checkVecC = () => { return squares[2][0] === squares[2][1] && squares[2][1] === squares[2][2] }
-
-// const checkVecD = () => { return squares[0][0] === squares[1][0] && squares[1][0] === squares[2][0] }
-// const checkVecE = () => { return squares[0][1] === squares[1][1] && squares[1][1] === squares[2][1] }
-// const checkVecF = () => { return squares[0][2] === squares[1][2] && squares[1][2] === squares[2][2] }
-
-// const checkVecG = () => { return squares[0][0] === squares[1][1] && squares[1][1] === squares[2][2] }
-// const checkVecH = () => { return squares[0][2] === squares[1][1] && squares[1][1] === squares[2][0] }
-
-
-
-// const inspectionWin = () => {
-//     const result = false;
-
-//     if (i === 0) { result = result || checkVecA(); }
-//     if (i === 1) { result = result || checkVecB(); }
-//     if (i === 2) { result = result || checkVecC(); }
-
-//     if (j === 0) { result = result || checkVecD(); }
-//     if (j === 1) { result = result || checkVecE(); }
-//     if (j === 2) { result = result || checkVecF(); }
-
-//     if (i === j) { result = result || checkVecG(); }
-//     if (i + j === 2) { result = result || checkVecH(); }
-//     console.log(result);
-// }
-
-
-
-
-
-    // const insertSquare = (i, j) => {
-    //     setSquares(squares.map((item_i, index_i) => {
-    //         if (index_i === i) {
-    //             return item_i.map((item_j, index_j) => {
-    //                 if (index_j === j) {
-    //                     console.log('insertSquare');
-
-    //                     return sign
-    //                 }
-    //                 else {
-    //                     return item_j
-    //                 }
-    //             })
-    //         }
-    //         else {
-    //             return item_i
-    //         }
-    //     }))
-
-    // }
