@@ -1,10 +1,15 @@
 .Square {
-    border: solid;
-    background-color: azure;
+    height: 32%;
+    width: 32%;
+    background-color: rgba(0, 0, 0, 0.714);
     display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .Square div {
-font-size:50px;
-    margin: auto;
+    color: white;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: 9vw;
+    text-align: center;
 }

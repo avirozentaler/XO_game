@@ -28,8 +28,7 @@ io.on('connection', (socket) => {
     socket.emit('autho', clientsCount <= 2);
 
 
-    socket.on('disconnect', () => {
-        
+    socket.on('disconnect', () => {   
          clientsCount-- 
         });
     socket.emit('start', board);
@@ -56,22 +55,24 @@ io.on('connection', (socket) => {
                 lastId = socket.id
                 const { i, j } = data;
                 board[i][j] = sign;
-
-                const isWin = inspectionWin(i, j);
+                let iswin = false;
+                isWin = inspectionWin(board,i, j);
 
                 if (isWin) {
+                    console.log(board);
                     console.log('win');
                     socket.emit('complete_move', { board, win: true, teko: false, sign });
                     socket.broadcast.emit('complete_move', { board, win: true, teko: false, sign });
 
                 }
-                else if (boardFull()) {
-
+                else if (boardFull(board)) {
+                    console.log(board);
                     console.log('teko');
                     socket.emit('complete_move', { board, win: false, teko: true });
                     socket.broadcast.emit('complete_move', { board, win: false, teko: true });
                 }
                 else {
+                    console.log(board);
                     console.log('normal');
                     socket.emit('complete_move', { board, win: false, teko: false, sign, turn: false });
                     socket.broadcast.emit('complete_move', { board, win: false, teko: false, sign, turn: true });
