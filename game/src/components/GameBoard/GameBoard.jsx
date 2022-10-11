@@ -1,46 +1,68 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import Square from '../Square/Square';
-import './module.GameBoard.css'
+import './module.GameBoard.css';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:3001');
 
+const socket = io('http://localhost:3001', { autoConnect: false });
 export default function GameBoard() {
 
     const [isWon, setIsWon] = useState(null);
-    const [squares, setSquares] = useState();
+    const [squares, setSquares] = useState(null);
+    const [teko, setTeko] = useState(false);
+    const [turn, setTurn] = useState(false);
+
 
     useEffect(() => {
-        socket.on('start', (data) => {
-            setSquares(data);
-        })
+        socket.connect();
+        socket.on('autho', (allow) => {
+            if (!allow) {
+                socket.disconnect();
+            }
+            else {
+                socket.on('start', (board) => {
+                    setSquares(board);
+                    setTurn(true);
+                })
+            }
+        });
     }, []);
+    
+    socket.on('complete_move', (data) => {
+        setSquares(data.board);
+        if (data.win) {
+            setIsWon(data.sign)
+            setTurn(false);
+        }
+        if (data.teko) {
+            setTurn(false);
+            setTeko(true);
+        }
+        if (data.turn) { setTurn(data.turn) }
+    });
 
-    useEffect(() => {
+    socket.on('complete_new_game', (data) => {
+        setSquares(data);
+    });
 
-        socket.on('complete_move', (data) => {
-            setSquares(data);
-        });
 
-        socket.on('complete_new_game', (data) => {
-            setIsWon(null);
-            setSquares(data);
-        });
-        socket.on('isWin',(data)=>{
-            setIsWon(data);
-            alert(`${data} is won!!`);
-        })
-    },[socket])
+
 
     const newGame = () => {
-        setIsWon('');
-        socket.emit('new_game', null);
+        setIsWon(false);
+        setTeko(false);
+        socket.emit('new_game');
+        setTurn(true);
     }
 
     const move = (i, j) => {
-        console.log(squares);
-        socket.emit("move", { i, j })
+        console.log(turn);
+        if (turn) {
+            socket.emit("move", { i, j });
+            setTurn(false);
+        }
+
     }
 
 
@@ -57,7 +79,9 @@ export default function GameBoard() {
                 })
             }) : null}
             <button onClick={newGame}>new game</button>
-            {isWon?<h2>{isWon} won!!</h2> :null}
+            {isWon ? <h2>{isWon} won!!</h2> : null}
+            {teko ? <h2>{isWon} teko !!</h2> : null}
+            {turn ? <h3> your turn..</h3> : null}
         </div>
 
     )

@@ -15,7 +15,7 @@ export default function Square(props){
         <div className='Square' onClick={tic}>
             <div> 
               {props.square} 
-              {/* {props.i} {props.j} */}
+             
             </div>
         </div>
     )
