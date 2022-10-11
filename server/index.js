@@ -5,8 +5,12 @@ const { Server } = require('socket.io')
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: ["http://localhost:3000"] } });
-let { sign, board, inspectionWin, restartBoard } = require('./data.js');
+let { board, inspectionWin, boardFull } = require('./data.js');
 
+
+let sign = "X";
+let lastId = '';
+let clientsCount = 0;
 
 const modifySign = () => {
     if (sign === "X") {
@@ -18,32 +22,63 @@ const modifySign = () => {
 }
 
 
-io.on('connect', (socket) => {
+io.on('connection', (socket) => {
+    clientsCount++;
+    console.log(clientsCount);
+    socket.emit('autho', clientsCount <= 2);
 
+
+    socket.on('disconnect', () => {
+        
+         clientsCount-- 
+        });
     socket.emit('start', board);
 
     socket.on('new_game', () => {
-        const temp = [Array(3).fill(''), Array(3).fill(''), Array(3).fill('')];
-        board = temp;
-        socket.emit('complete_new_game', temp);
-        socket.broadcast.emit('complete_new_game', temp);
+       console.log('new game');
+       board =  board.map((arr) => {
+            return arr.map((item) => {
+                return item ='';
+                 });
+                });
+        console.log(board);
+        lastId = '';
+        socket.emit('complete_new_game', board);
+        socket.broadcast.emit('complete_new_game', board);
+        socket.broadcast.emit('complete_new_game', board);
     });
 
+
     socket.on('move', (data) => {
-        const { i, j } = data;
-        board[i][j] = sign;
-        
-        socket.broadcast.emit('complete_move', board);
-        socket.emit('complete_move', board);
+        if (clientsCount === 2) {
+            if (socket.id != lastId) {
+                console.log(lastId);
+                lastId = socket.id
+                const { i, j } = data;
+                board[i][j] = sign;
 
-        if (inspectionWin(i, j)) {
-            socket.emit('isWin', sign);
-            socket.broadcast.emit('isWin', sign);
-            const temp = [Array(3).fill(''), Array(3).fill(''), Array(3).fill('')];
-            board = temp;
+                const isWin = inspectionWin(i, j);
 
+                if (isWin) {
+                    console.log('win');
+                    socket.emit('complete_move', { board, win: true, teko: false, sign });
+                    socket.broadcast.emit('complete_move', { board, win: true, teko: false, sign });
+
+                }
+                else if (boardFull()) {
+
+                    console.log('teko');
+                    socket.emit('complete_move', { board, win: false, teko: true });
+                    socket.broadcast.emit('complete_move', { board, win: false, teko: true });
+                }
+                else {
+                    console.log('normal');
+                    socket.emit('complete_move', { board, win: false, teko: false, sign, turn: false });
+                    socket.broadcast.emit('complete_move', { board, win: false, teko: false, sign, turn: true });
+                }
+                modifySign();
+            }
         }
-        modifySign();
     });
 
 
@@ -58,33 +93,4 @@ server.listen(3001, () => console.log('socketIo connsected with port 3001'))
 
 
 
-// const checkVecA = () => { return board[0][0] === board[0][1] && board[0][1] === board[0][2] }
-// const checkVecB = () => { return board[1][0] === board[1][1] && board[1][1] === board[1][2] }
-// const checkVecC = () => { return board[2][0] === board[2][1] && board[2][1] === board[2][2] }
-
-// const checkVecD = () => { return board[0][0] === board[1][0] && board[1][0] === board[2][0] }
-// const checkVecE = () => { return board[0][1] === board[1][1] && board[1][1] === board[2][1] }
-// const checkVecF = () => { return board[0][2] === board[1][2] && board[1][2] === board[2][2] }
-
-// const checkVecG = () => { return board[0][0] === board[1][1] && board[1][1] === board[2][2] }
-// const checkVecH = () => { return board[0][2] === board[1][1] && board[1][1] === board[2][0] }
-
-
-
-
-// const inspectionWin = (i, j) => {
-//     let result = false;
-
-//     if (i === 0) { result = result || checkVecA(); }
-//     if (i === 1) { result = result || checkVecB(); }
-//     if (i === 2) { result = result || checkVecC(); }
-
-//     if (j === 0) { result = result || checkVecD(); }
-//     if (j === 1) { result = result || checkVecE(); }
-//     if (j === 2) { result = result || checkVecF(); }
-
-//     if (i === j) { result = result || checkVecG(); }
-//     if (i + j === 2) { result = result || checkVecH(); }
-//     return result;
-// }
 
