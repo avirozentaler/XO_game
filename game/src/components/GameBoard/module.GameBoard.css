@@ -1,7 +1,37 @@
-.GameBoard
-{
-    justify-content: center;
+.GameBoard {
+ 
+    margin: auto;
+    width: 45vw;
+    height: 90vh;
     display: grid;
-    grid-template-columns: 30vh 30vh 30vh;
-    grid-template-rows: 15vw 15vw 15vw;
+    grid-template-rows: 90% 10%;
+}
+
+.board{
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+
+    justify-content: space-around;
+
+}
+.newGame
+{
+    font-size: large;
+    border: none;
+border-radius: 30px;
+text-underline-position: below;
+}
+
+
+.nav {
+    color: white;
+    text-align: center;
+    align-items: center;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.714);
+    display: flex;
+    justify-content: space-around;
 }

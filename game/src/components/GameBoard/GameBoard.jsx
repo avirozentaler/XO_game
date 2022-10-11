@@ -6,7 +6,9 @@ import io from 'socket.io-client';
 
 
 const socket = io('http://localhost:3001', { autoConnect: false });
+
 export default function GameBoard() {
+    // const [sign, setSign] = useState(null);
 
     const [isWon, setIsWon] = useState(null);
     const [squares, setSquares] = useState(null);
@@ -28,25 +30,34 @@ export default function GameBoard() {
             }
         });
     }, []);
+
     
-    socket.on('complete_move', (data) => {
-        setSquares(data.board);
-        if (data.win) {
-            setIsWon(data.sign)
-            setTurn(false);
-        }
-        if (data.teko) {
-            setTurn(false);
-            setTeko(true);
-        }
-        if (data.turn) { setTurn(data.turn) }
-    });
 
-    socket.on('complete_new_game', (data) => {
-        setSquares(data);
-    });
+    useEffect(()=>{
+        socket.on('complete_move', (data) => {
+            setSquares(data.board);
+           
+            if (data.win) {
+                setIsWon(data.sign)
+                setTurn(false);
+            }
+            if (data.teko) {
+                setTurn(false);
+                setTeko(true);
+            }
+            if (data.turn) { setTurn(data.turn) }
+        });
 
+        socket.on('complete_new_game', (data) => {
+            setSquares(data);
+            setIsWon(false);
+            setTeko(false);
+        });
+    
+       
+    
 
+    },[socket]);
 
 
     const newGame = () => {
@@ -65,23 +76,24 @@ export default function GameBoard() {
 
     }
 
-
-
-
-
-
     return (
 
         <div className='GameBoard'>
-            {squares ? squares.map((item, index_i) => {
-                return item.map((square, index_j) => {
-                    return <Square key={index_i + index_j} square={square} isWon={isWon} move={move} i={index_i} j={index_j} ></Square>
-                })
-            }) : null}
-            <button onClick={newGame}>new game</button>
-            {isWon ? <h2>{isWon} won!!</h2> : null}
-            {teko ? <h2>{isWon} teko !!</h2> : null}
-            {turn ? <h3> your turn..</h3> : null}
+            <div className='board'>
+                {squares ? squares.map((item, index_i) => {
+                    return item.map((square, index_j) => {
+                        return <Square key={index_i + index_j} square={square} isWon={isWon} move={move} i={index_i} j={index_j} ></Square>
+                    })
+                }) : null}
+            </div>
+            <div className='nav'>
+                <button className='newGame' onClick={newGame}>new game</button>
+                {isWon ? <h1>{isWon} won!!</h1> : null}
+                {teko ? <h2> teko !!</h2> : null}
+                {!teko && turn ? <h3> your turn..</h3> : null}
+                <div></div>
+            </div>
+
         </div>
 
     )
